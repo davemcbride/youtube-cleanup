@@ -1,0 +1,6 @@
+client_secret_*.json
+*Zone.Identifier
+.vscode/settings.json
+token.pickle
+keep_channels.txt
+keep_channels_orig.txt
