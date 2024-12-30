@@ -57,26 +57,53 @@ def unsubscribe(youtube, subscription_id):
 
 if __name__ == "__main__":
     youtube = get_authenticated_service()
-    subscriptions = list_subscriptions(youtube)
     
-    # # Print and save the list of subscriptions
-    keep_channels_file = 'keep_channels.txt'
-    # print_and_save_subscriptions(subscriptions, keep_channels_file)
-    
-    # Read the keep channels from the file
-    keep_channels = read_keep_channels(keep_channels_file)
-    
-# Unsubscribe from channels not in the keep list
-    unsubscribe_all = False
-    for subscription in subscriptions:
-        channel_id = subscription['snippet']['resourceId']['channelId']
-        print(f"Skipping: {channel_id}")
-        if channel_id not in keep_channels:
-            if not unsubscribe_all:
-                user_input = input(f"Do you want to unsubscribe from {subscription['snippet']['title']}? (yes/no/all): ").strip().lower()
-                if user_input == 'all':
-                    unsubscribe_all = True
-                elif user_input != 'yes':
-                    continue
-            unsubscribe(youtube, subscription['id'])
-            print(f"Unsubscribed from {subscription['snippet']['title']}")
+    # Initial menu
+    while True:
+        print("\nYouTube Subscription Cleaner")
+        print("1. Get current subscriptions and save to file")
+        print("2. Delete subscriptions")
+        print("3. Exit")
+        
+        choice = input("Enter your choice (1/2/3): ").strip()
+        
+        if choice == '1':
+            # Get and save subscriptions
+            subscriptions = list_subscriptions(youtube)
+            keep_channels_file = 'keep_channels.txt'
+            print_and_save_subscriptions(subscriptions, keep_channels_file)
+            print(f"Subscriptions saved to {keep_channels_file}")
+        
+        elif choice == '2':
+            # Read the keep channels from the file
+            keep_channels_file = 'keep_channels.txt'
+            try:
+                keep_channels = read_keep_channels(keep_channels_file)
+            except FileNotFoundError:
+                print(f"Error: {keep_channels_file} not found. Please first use option 1 to save subscriptions.")
+                continue
+            
+            # Get current subscriptions
+            subscriptions = list_subscriptions(youtube)
+            
+            # Unsubscribe from channels not in the keep list
+            unsubscribe_all = False
+            for subscription in subscriptions:
+                channel_id = subscription['snippet']['resourceId']['channelId']
+                print(f"Checking: {channel_id}")
+                if channel_id not in keep_channels:
+                    if not unsubscribe_all:
+                        user_input = input(f"Do you want to unsubscribe from {subscription['snippet']['title']}? (yes/no/all): ").strip().lower()
+                        if user_input == 'all':
+                            unsubscribe_all = True
+                        elif user_input != 'yes':
+                            continue
+                    unsubscribe(youtube, subscription['id'])
+                    print(f"Unsubscribed from {subscription['snippet']['title']}")
+        
+        elif choice == '3':
+            print("Exiting YouTube Subscription Cleaner.")
+            break
+        
+        else:
+            print("Invalid choice. Please enter 1, 2, or 3.")
